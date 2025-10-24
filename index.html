@@ -57,10 +57,24 @@
     .qty input{width:60px;height:40px;font-size:16px;padding:6px;text-align:center;border:1px solid var(--border);border-radius:8px;}
     .qty .step{width:44px;height:44px;border:1px solid var(--border);border-radius:8px;background:#fafafa;font-size:18px;}
     .section-title{margin:8px 0 12px;font-weight:800;font-size:14px;color:#444;letter-spacing:.02em;}
-    .order-card{border:1px solid var(--border);border-radius:12px;padding:10px;display:grid;gap:8px;}
+    .order-card{position:relative;border:1px solid var(--border);border-radius:12px;padding:10px;display:grid;gap:8px;}
     .order-card .meta{font-size:12px;color:var(--muted);}
+    .close{
+      position:absolute; top:8px; right:8px;
+      width:28px; height:28px; display:grid; place-items:center;
+      border-radius:999px; border:1px solid var(--border); background:#fff;
+      font-size:18px; line-height:1; color:#444;
+    }
+    .close:active{transform:scale(.96)}
     .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:80px;background:#111;color:#fff;padding:10px 14px;border-radius:999px;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,.2);opacity:0;pointer-events:none;transition:opacity .2s;}
     .toast.show{opacity:1}
+    .undo{
+      position:fixed;left:50%;transform:translateX(-50%);bottom:130px;
+      background:#222;color:#fff;padding:10px 14px;border-radius:12px;
+      box-shadow:0 4px 12px rgba(0,0,0,.25);display:flex;gap:10px;align-items:center;
+      font-size:14px;z-index:20;
+    }
+    .undo .link{background:#fff;color:#111;border:0;border-radius:999px;padding:6px 10px;font-weight:800;}
     .row{display:flex;align-items:center;gap:8px;}
     .grow{flex:1}
     .list-2col{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;}
@@ -120,6 +134,10 @@
         return Number.isFinite(n) ? n : 0;
       });
       const {msg,show,toast} = useToast();
+
+      // 되돌리기 상태
+      const [undoState,setUndoState] = useState({visible:false, order:null, index:null});
+      const undoTimer = useRef(null);
 
       useEffect(()=>{ localStorage.setItem(STORAGE_ORDERS_KEY, JSON.stringify(orders)); },[orders]);
       useEffect(()=>{ localStorage.setItem(STORAGE_COUNTER_KEY, String(counter)); },[counter]);
@@ -183,15 +201,15 @@
         const entry = {
           no: nextNo,
           createdAt: Date.now(),
-          text: itemsOnlyText, // 히스토리에는 메뉴만 저장
+          text: itemsOnlyText,
           items: snapshot,
           total: snapshot.reduce((a,b)=>a+b.price*b.qty,0),
         };
         setCounter(nextNo);
-        setOrders(prev=>[entry, ...prev]); // 최신 주문 상단
+        setOrders(prev=>[entry, ...prev]);
       };
 
-      // --- 주문 복사/공유(대괄호 제거) ---
+      // 주문 복사/공유(대괄호 제거)
       const copyOrder = async ()=>{
         const itemsText = buildText();
         if(!itemsText){ toast('선택한 메뉴가 없습니다'); return; }
@@ -224,10 +242,39 @@
         toast('주문 내역을 초기화했어요');
       };
 
+      // 확인창 + 되돌리기 지원 단일 삭제
+      const deleteOrderWithConfirm = (no)=>{
+        const idx = orders.findIndex(o=>o.no===no);
+        if(idx===-1) return;
+        if(!confirm(`${no}번 주문을 삭제할까요?`)) return;
+        const removed = orders[idx];
+        setOrders(prev => prev.filter(o => o.no !== no));
+        // 스낵바 상태 설정
+        if(undoTimer.current){ clearTimeout(undoTimer.current); }
+        setUndoState({visible:true, order:removed, index:idx});
+        undoTimer.current = setTimeout(()=>{
+          setUndoState({visible:false, order:null, index:null});
+        }, 6000);
+        toast(`${no}번 주문을 삭제했어요`);
+      };
+
+      const undoDelete = ()=>{
+        if(!undoState.order) return;
+        setOrders(prev=>{
+          const next = [...prev];
+          const insertAt = Math.min(undoState.index ?? 0, next.length);
+          next.splice(insertAt, 0, undoState.order);
+          return next;
+        });
+        if(undoTimer.current){ clearTimeout(undoTimer.current); }
+        setUndoState({visible:false, order:null, index:null});
+        toast('삭제를 되돌렸어요');
+      };
+
       /* ---------- 통계 계산 ---------- */
       const stats = useMemo(()=>{
         let grand = 0;
-        const per = {}; // id -> { name, qty, amount }
+        const per = {};
         for(const o of orders){
           grand += o.total || 0;
           for(const it of (o.items||[])){
@@ -251,7 +298,7 @@
         return `메뉴별 총액| ${parts.join(', ')}`;
       };
 
-      // --- [NEW] 통합 텍스트(총액 + 메뉴별 총액) ---
+      // 통합 통계 문자열
       const buildStatsText = ()=>{
         const line1 = `총액| ₩${won(stats.grandTotal)}`;
         const line2 = buildMenuTotalsText();
@@ -272,7 +319,6 @@
           toast('공유 미지원: 복사해뒀어요');
         }
       };
-      /* -------------------------------- */
 
       return (
         <div className="container">
@@ -368,19 +414,16 @@
                   <button className="icon-btn" onClick={clearHistory}>초기화</button>
                 </div>
 
-                {/* ---------- 통계(한 카드 + 통합 공유/복사) ---------- */}
+                {/* 통계(한 카드 + 통합 공유/복사) */}
                 <div className="order-card" style={{marginBottom:10}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                     <div style={{fontWeight:800}}>주문 통계</div>
                     <div className="muted">{orders.length}건</div>
                   </div>
 
-                  {/* 총액 */}
                   <div style={{fontSize:18,fontWeight:800}}>₩{won(stats.grandTotal)}</div>
-
                   <div className="hr"></div>
 
-                  {/* 메뉴별 총액 */}
                   <div style={{fontWeight:800}}>메뉴별 총액</div>
                   {perMenuArr.length===0 ? (
                     <div className="muted">주문 내역이 없어 계산할 항목이 없습니다.</div>
@@ -401,15 +444,19 @@
                   </div>
                 </div>
 
-                {/* ---------- 주문 카드 목록 ---------- */}
+                {/* 주문 카드 목록 */}
                 <div style={{display:'grid',gap:'10px'}}>
                   {orders.length===0 && <div style={{color:'#666'}}>아직 주문 내역이 없어요.</div>}
                   {orders.map(o=> (
                     <div className="order-card" key={o.no}>
-                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                      <button className="close" aria-label="주문 삭제" title="삭제"
+                        onClick={()=>deleteOrderWithConfirm(o.no)}>&times;</button>
+
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',paddingRight:34}}>
                         <div style={{fontWeight:800}}>{o.no}번 주문</div>
                         <div className="meta">{new Date(o.createdAt).toLocaleString('ko-KR')}</div>
                       </div>
+
                       <div>{o.text}</div>
                       <div style={{fontWeight:700}}>합계: ₩{won(o.total)}</div>
                       <div className="row">
@@ -446,6 +493,14 @@
               </div>
             )}
           </div>
+
+          {/* 되돌리기 스낵바 */}
+          {undoState.visible && (
+            <div className="undo" role="status" aria-live="polite">
+              <div>{undoState.order?.no}번 주문을 삭제함</div>
+              <button className="link" onClick={undoDelete}>되돌리기</button>
+            </div>
+          )}
 
           <div className={"toast " + (show?'show':'')}>{msg}</div>
         </div>
