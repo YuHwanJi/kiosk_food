@@ -112,22 +112,20 @@
     // 🔧 환경설정 — Render에 배포한 API의 도메인으로 교체하세요.
     const API_BASE = "https://kiosk-orders-api.onrender.com"; // ← 예: https://kiosk-orders-api.onrender.com
     const APP_KEY  = "kiosk_food";
-    // (선택) 관리자 토큰을 미리 넣고 싶다면 아래 값에 문자열로 넣으세요. 빈 문자열이면 최초 1회 입력받습니다.
-    let ADMIN_TOKEN = "";
 
     // 🍽️ 음식 메뉴 (필요 시 자유롭게 수정)
     const MENU = [
-      { name: "쫀드기 튀김", price: 3000 },
-      { name: "동전 쥐포",   price: 3000 },
-      { name: "낙지 덮밥",   price: 3000 },
-      { name: "버터 오징어", price: 5000 },
-      { name: "각종 꼬치",   price: 3000 },
-      { name: "떡볶이",     price: 3000 },
-      { name: "팝콘 만두",  price: 2000 },
-      { name: "김말이 미니", price: 2000 },
-      { name: "고향 만두",  price: 2000 },
-      { name: "얼박사",     price: 3000 },
-      { name: "사이다+파워에이드", price: 3000 },
+      { id: 'jondeugi-twigim_s', name: '쫀드기 부드럽게', price: 5000 },
+      { id: 'jondeugi-twigim_h', name: '쫀드기 딱딱하게', price: 5000 },
+      { id: 'dongjeon-jwipo_s', name: '동전 쥐포 소', price: 3000 },
+      { id: 'dongjeon-jwipo_b', name: '동전 쥐포 대', price: 5000 },
+      { id: 'nakji-deopbap', name: '낙지 덮밥', price: 8000 },
+      { id: 'butter-ojingeo', name: '버터 오징어', price: 5000 },
+      { id: 'kkochi', name: '꼬치', price: 1000 },
+      { id: 'tteokbokki', name: '떡볶이', price: 3000 },
+      { id: 'popcorn-mandu', name: '모둠 튀김', price: 2000 },
+      { id: 'eolbaksa', name: '얼박사', price: 3000 },
+      { id: 'cider-pow', name: '사이다+파워에이드', price: 3000 },
     ];
 
     // 🛒 장바구니 상태
