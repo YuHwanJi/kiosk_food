@@ -6,86 +6,47 @@
   <title>키오스크 음식</title>
   <style>
     :root{
-      --bg:#ffffff;
-      --fg:#111111;
-      --accent:#0a7a5a;
-      --muted:#777777;
-      --border:#e8e8e8;
-      --danger:#e53636;
-      --shadow:rgba(0,0,0,.06);
+      --bg:#ffffff; --fg:#111; --accent:#0a7a5a; --muted:#777; --border:#e8e8e8; --danger:#e53636; --shadow:rgba(0,0,0,.06);
     }
-    *{box-sizing:border-box}
-    html,body,#root{height:100%}
-    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg);}
-    .container{max-width:480px;margin:0 auto;background:var(--bg);min-height:100%;display:flex;flex-direction:column;}
-    .topbar{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);padding:12px;display:flex;align-items:center;justify-content:space-between;z-index:10;}
+    *{box-sizing:border-box} html,body,#root{height:100%}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#fff;color:#111;}
+    .container{max-width:480px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;}
+    .topbar{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--border);padding:12px;display:flex;align-items:center;justify-content:space-between;z-index:10;}
     .topbar .left{display:flex;align-items:center;gap:8px;}
     .icon-btn{appearance:none;border:1px solid var(--border);background:#f9f9f9;padding:8px 12px;border-radius:10px;font-size:14px;line-height:1;min-height:40px;}
-    .icon-btn:active{transform:translateY(1px)}
-    .title{font-weight:700}
-    .main{flex:1;display:flex;flex-direction:column;}
-    .content{flex:1;padding:12px;padding-bottom:96px;}
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
-    .menu-cell{position:relative;}
+    .icon-btn:active{transform:translateY(1px)} .title{font-weight:700}
+    .main{flex:1;display:flex;flex-direction:column;} .content{flex:1;padding:12px;padding-bottom:96px;}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;} .menu-cell{position:relative;}
     .menu-cell::before{content:"";display:block;padding-bottom:100%;}
-    .menu-item{
-      position:absolute; inset:0;
-      border:1px solid var(--border); border-radius:12px;
-      background:#fff; box-shadow:0 1px 0 var(--shadow);
-      display:flex; flex-direction:column; justify-content:center; align-items:center;
-      text-align:center; padding:8px; transition:transform .02s;
-    }
-    .menu-item:active{transform:scale(.98)}
-    .badge{position:absolute; top:6px; right:6px; z-index:2; background:#111;color:#fff;border-radius:999px;min-width:20px;height:20px;font-size:12px;display:grid;place-items:center;padding:0 6px;}
-    .menu-item .name{
-      font-size:13px;font-weight:700;line-height:1.2;word-break:keep-all;
-      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
-      overflow:hidden; text-overflow:ellipsis;
-    }
+    .menu-item{position:absolute;inset:0;border:1px solid var(--border);border-radius:12px;background:#fff;box-shadow:0 1px 0 var(--shadow);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8px;transition:transform .02s;}
+    .menu-item:active{transform:scale(.98)} .badge{position:absolute;top:6px;right:6px;background:#111;color:#fff;border-radius:999px;min-width:20px;height:20px;font-size:12px;display:grid;place-items:center;padding:0 6px;}
+    .menu-item .name{font-size:13px;font-weight:700;line-height:1.2;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;}
     .menu-item .price{margin-top:4px;font-size:12px;color:var(--muted)}
-    .bottombar{position:sticky;bottom:0;border-top:1px solid var(--border);background:var(--bg);padding:12px;display:flex;gap:8px;align-items:center;z-index:10;}
+    .bottombar{position:sticky;bottom:0;border-top:1px solid var(--border);background:#fff;padding:12px;display:flex;gap:8px;align-items:center;z-index:10;}
     .btn{flex:1;padding:12px;border-radius:10px;border:0;background:var(--accent);color:#fff;font-weight:800;font-size:16px;min-height:48px;}
-    .btn.secondary{background:#f0f0f0;color:#111;border:1px solid var(--border);}
-    .btn.danger{background:var(--danger);color:#fff}
-    .btn:disabled{opacity:.5}
+    .btn.secondary{background:#f0f0f0;color:#111;border:1px solid var(--border);} .btn:disabled{opacity:.5}
     .cart-list{display:flex;flex-direction:column;gap:8px;}
     .cart-item{border:1px solid var(--border);border-radius:12px;padding:10px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;}
-    .cart-item .name{font-weight:700;}
-    .cart-item .info{color:var(--muted);font-size:12px;margin-top:4px;}
-    .line-total{font-weight:700;}
-    .qty{display:flex;align-items:center;gap:6px;}
+    .cart-item .name{font-weight:700;} .cart-item .info{color:var(--muted);font-size:12px;margin-top:4px;}
+    .line-total{font-weight:700;} .qty{display:flex;align-items:center;gap:6px;}
     .qty input{width:60px;height:40px;font-size:16px;padding:6px;text-align:center;border:1px solid var(--border);border-radius:8px;}
     .qty .step{width:44px;height:44px;border:1px solid var(--border);border-radius:8px;background:#fafafa;font-size:18px;}
     .section-title{margin:8px 0 12px;font-weight:800;font-size:14px;color:#444;letter-spacing:.02em;}
     .order-card{position:relative;border:1px solid var(--border);border-radius:12px;padding:10px;display:grid;gap:8px;}
     .order-card .meta{font-size:12px;color:var(--muted);}
-    .close{
-      position:absolute; top:8px; right:8px;
-      width:28px; height:28px; display:grid; place-items:center;
-      border-radius:999px; border:1px solid var(--border); background:#fff;
-      font-size:18px; line-height:1; color:#444;
-    }
+    .close{position:absolute;top:8px;right:8px;width:28px;height:28px;display:grid;place-items:center;border-radius:999px;border:1px solid var(--border);background:#fff;font-size:18px;line-height:1;color:#444;}
     .close:active{transform:scale(.96)}
     .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:80px;background:#111;color:#fff;padding:10px 14px;border-radius:999px;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,.2);opacity:0;pointer-events:none;transition:opacity .2s;}
     .toast.show{opacity:1}
-    .row{display:flex;align-items:center;gap:8px;}
-    .grow{flex:1}
+    .row{display:flex;align-items:center;gap:8px;} .grow{flex:1}
     .list-2col{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;}
-    .muted{color:#777}
-    .hr{height:1px;background:var(--border);margin:4px 0;}
-
-    /* 복원 모달 */
-    .modal-backdrop{
-      position:fixed; inset:0; background:rgba(0,0,0,.35); display:flex; align-items:flex-end; justify-content:center; z-index:50;
-    }
-    .modal{
-      width:100%; max-width:480px; background:#fff; border-top-left-radius:16px; border-top-right-radius:16px;
-      box-shadow:0 -8px 24px rgba(0,0,0,.25); padding:12px; max-height:75vh; overflow:auto;
-    }
-    .modal .header{display:flex; align-items:center; gap:8px;}
-    .pill{appearance:none;border:1px solid var(--border);background:#f5f5f5;padding:8px 10px;border-radius:999px;font-size:13px;}
-    .trash-item{border:1px solid var(--border); border-radius:12px; padding:10px; display:grid; gap:8px;}
-    .trash-meta{font-size:12px; color:var(--muted); display:flex; justify-content:space-between;}
+    .muted{color:#777} .hr{height:1px;background:var(--border);margin:4px 0;}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center;z-index:50;}
+    .modal{width:100%;max-width:480px;background:#fff;border-top-left-radius:16px;border-top-right-radius:16px;box-shadow:0 -8px 24px rgba(0,0,0,.25);padding:12px;max-height:75vh;overflow:auto;}
+    .modal .header{display:flex;align-items:center;gap:8px;} .pill{appearance:none;border:1px solid var(--border);background:#f5f5f5;padding:8px 10px;border-radius:999px;font-size:13px;}
+    .trash-item{border:1px solid var(--border);border-radius:12px;padding:10px;display:grid;gap:8px;} .trash-meta{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;}
+    .admin{display:flex;gap:8px;align-items:center;}
+    .tag{font-size:12px;background:#eef7f4;border:1px solid #d5efe6;color:#04624a;border-radius:999px;padding:4px 8px;}
   </style>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -97,6 +58,12 @@
   <script type="text/babel">
     const {useState,useMemo,useEffect,useRef} = React;
 
+    /* ====== 앱/서버 설정 ====== */
+    const API_BASE = "https://kiosk-orders-api.onrender.com";         // ← 서버 주소로 교체
+    const APP_NS   = "kiosk.food";                     // 음식 네임스페이스
+    const ADMIN_TOKEN_KEY = `${APP_NS}.adminToken`;    // 관리자 토큰 저장 키
+
+    /* ====== 메뉴 ====== */
     const MENU = [
       { id: 'jondeugi-twigim_s', name: '쫀드기 부드럽게', price: 5000 },
       { id: 'jondeugi-twigim_h', name: '쫀드기 딱딱하게', price: 5000 },
@@ -111,220 +78,107 @@
       { id: 'cider-pow', name: '사이다+파워에이드', price: 3000 },
     ];
 
-    const APP_NS = 'kiosk.food'; // 앱 네임스페이스
-    const STORAGE_ORDERS_KEY = `${APP_NS}.orders.v1`;
-    const STORAGE_COUNTER_KEY = `${APP_NS}.orderCounter.v1`;
-    const STORAGE_TRASH_KEY  = `${APP_NS}.orders.trash.v1`;
     const SCREENS = { MENU:'menu', CART:'cart', HISTORY:'history' };
     const won = (n)=> n.toLocaleString('ko-KR');
 
     function useToast(){
-      const [msg,setMsg] = useState('');
-      const [show,setShow] = useState(false);
-      const timer = useRef(null);
-      const toast = (text)=>{
-        setMsg(text); setShow(true);
-        if(timer.current){ clearTimeout(timer.current); }
-        timer.current = setTimeout(()=>setShow(false), 1600);
-      };
+      const [msg,setMsg] = useState(''); const [show,setShow] = useState(false); const timer = useRef(null);
+      const toast = (text)=>{ setMsg(text); setShow(true); if(timer.current) clearTimeout(timer.current); timer.current=setTimeout(()=>setShow(false),1600); };
       return {msg,show,toast};
+    }
+
+    async function api(path, opts={}){
+      const token = localStorage.getItem(ADMIN_TOKEN_KEY)||'';
+      const headers = {'Content-Type':'application/json', ...(opts.headers||{})};
+      if(token) headers['Authorization'] = `Bearer ${token}`;
+      const r = await fetch(`${API_BASE}${path}`, {...opts, headers});
+      if(!r.ok){ throw new Error(await r.text()); }
+      return r.json();
     }
 
     function App(){
       const [screen,setScreen] = useState(SCREENS.MENU);
       const [cart,setCart] = useState(()=>({}));
-      const [orders,setOrders] = useState(()=>{ try{ return JSON.parse(localStorage.getItem(STORAGE_ORDERS_KEY)) || [] } catch(e){ return [] } });
-      const [counter,setCounter] = useState(()=>{ const n = Number(localStorage.getItem(STORAGE_COUNTER_KEY) || '0'); return Number.isFinite(n) ? n : 0; });
-      const [trash,setTrash] = useState(()=>{ try{ return JSON.parse(localStorage.getItem(STORAGE_TRASH_KEY)) || [] } catch(e){ return [] } });
+      const [orders,setOrders] = useState([]);           // 서버에서 로드
+      const [trash,setTrash] = useState([]);             // 삭제된 항목(서버에서 include_deleted=1)
       const [showRestore,setShowRestore] = useState(false);
+      const [admin,setAdmin] = useState(()=> !!localStorage.getItem(ADMIN_TOKEN_KEY));
       const {msg,show,toast} = useToast();
 
-      useEffect(()=>{ localStorage.setItem(STORAGE_ORDERS_KEY, JSON.stringify(orders)); },[orders]);
-      useEffect(()=>{ localStorage.setItem(STORAGE_COUNTER_KEY, String(counter)); },[counter]);
-      useEffect(()=>{ localStorage.setItem(STORAGE_TRASH_KEY, JSON.stringify(trash)); },[trash]);
+      // 초기 로딩
+      const loadOrders = async (withDeleted=false)=>{
+        const q = withDeleted ? `&include_deleted=1` : ``;
+        const list = await api(`/orders?app_ns=${encodeURIComponent(APP_NS)}${q}`);
+        setOrders(list.filter(o=>!o.deletedAt));
+        setTrash(list.filter(o=>!!o.deletedAt));
+      };
+      useEffect(()=>{ loadOrders(true).catch(()=>toast('서버 연결 실패')); },[]);
 
+      // 합계
       const total = useMemo(()=> Object.entries(cart).reduce((acc,[id,info])=>{
-        const item = MENU.find(m=>m.id===id);
-        return item ? acc + item.price * (info.qty||0) : acc;
+        const item = MENU.find(m=>m.id===id); return item ? acc + item.price * (info.qty||0) : acc;
       },0),[cart]);
-
       const itemQty = (id)=> cart[id]?.qty || 0;
 
-      const add = (id,delta=1)=>{
-        setCart(prev=>{
-          const next = {...prev};
-          const q = (next[id]?.qty || 0) + delta;
-          if(q <= 0) delete next[id];
-          else next[id] = { qty:q };
-          return next;
-        });
-      };
-
-      const setQty = (id,qty)=>{
-        qty = Math.max(0, Number.isFinite(qty) ? qty : 0);
-        setCart(prev=>{
-          const next = {...prev};
-          if(qty === 0) delete next[id];
-          else next[id] = { qty };
-          return next;
-        });
-      };
-
+      const add = (id,delta=1)=> setCart(prev=>{ const next={...prev}; const q=(next[id]?.qty||0)+delta; if(q<=0) delete next[id]; else next[id]={qty:q}; return next; });
+      const setQty = (id,qty)=> setCart(prev=>{ const next={...prev}; qty=Math.max(0, Number.isFinite(qty)?qty:0); if(qty===0) delete next[id]; else next[id]={qty}; return next; });
       const clearCart = ()=> setCart({});
+      const selectedItemsInMenuOrder = useMemo(()=> MENU.map(it=>({ ...it, qty:itemQty(it.id) })).filter(it=>it.qty>0), [cart]);
 
-      const selectedItemsInMenuOrder = useMemo(()=> MENU
-        .map(it=>({ ...it, qty:itemQty(it.id) }))
-        .filter(it=>it.qty>0), [cart]);
+      const buildText = ()=> MENU.map(it=>{ const q=itemQty(it.id); return q>0?`${it.name.replace(/\s+/g,'')} ${q}`:null; }).filter(Boolean).join(', ');
+      const copyText = async(text)=>{ if(navigator.clipboard&&window.isSecureContext){ await navigator.clipboard.writeText(text); } else { const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);} };
 
-      const buildText = ()=>{
-        const parts = MENU.map(it=>{
-          const q = itemQty(it.id);
-          return q>0 ? `${it.name.replace(/\s+/g,'')} ${q}` : null;
-        }).filter(Boolean);
-        return parts.join(', ');
-      };
-
-      const copyText = (text)=>{
-        const fallback = ()=>{
-          const ta = document.createElement('textarea');
-          ta.value = text; document.body.appendChild(ta); ta.select();
-          try{ document.execCommand('copy'); }catch(e){}
-          document.body.removeChild(ta);
-        };
-        if(navigator.clipboard && window.isSecureContext){
-          return navigator.clipboard.writeText(text).catch(fallback);
-        }else{ fallback(); return Promise.resolve(); }
-      };
-
-      const saveToHistory = (itemsOnlyText)=>{
+      // 서버 저장(생성)
+      const saveToHistory = async (itemsOnlyText)=>{
         const snapshot = selectedItemsInMenuOrder.map(it=>({id:it.id,name:it.name,price:it.price,qty:it.qty}));
-        const nextNo = counter + 1;
-        const entry = {
-          no: nextNo,
-          createdAt: Date.now(),
-          text: itemsOnlyText,
-          items: snapshot,
-          total: snapshot.reduce((a,b)=>a+b.price*b.qty,0),
-        };
-        setCounter(nextNo);
-        setOrders(prev=>[entry, ...prev]);
+        const total = snapshot.reduce((a,b)=>a+b.price*b.qty,0);
+        const created = await api(`/orders`, {method:'POST', body:JSON.stringify({app_ns:APP_NS,text:itemsOnlyText,items:snapshot,total})});
+        setOrders(prev=>[created,...prev]);
       };
 
-      // 주문 복사/공유(대괄호 제거)
+      // 주문 복사/공유
       const copyOrder = async ()=>{
-        const itemsText = buildText();
-        if(!itemsText){ toast('선택한 메뉴가 없습니다'); return; }
-        const nextNo = counter + 1;
-        const textToCopy = `${nextNo}번 주문| ${itemsText}`;
-        await copyText(textToCopy);
-        toast('주문 목록이 복사되었어요');
-        saveToHistory(itemsText);
+        const itemsText = buildText(); if(!itemsText){ toast('선택한 메뉴가 없습니다'); return; }
+        const text = `주문| ${itemsText}`; await copyText(text); toast('주문 목록이 복사되었어요'); await saveToHistory(itemsText);
       };
-
       const shareOrder = async ()=>{
-        const itemsText = buildText();
-        if(!itemsText){ toast('선택한 메뉴가 없습니다'); return; }
-        const nextNo = counter + 1;
-        const textToShare = `${nextNo}번 주문| ${itemsText}`;
-        if(navigator.share){
-          try{ await navigator.share({ text: textToShare }); }catch(e){}
-        }else{
-          await copyText(textToShare);
-          toast('공유 미지원: 복사해뒀어요');
-        }
-        saveToHistory(itemsText);
+        const itemsText = buildText(); if(!itemsText){ toast('선택한 메뉴가 없습니다'); return; }
+        const text = `주문| ${itemsText}`;
+        if(navigator.share){ try{ await navigator.share({text}); }catch(e){} } else { await copyText(text); toast('공유 미지원: 복사해뒀어요'); }
+        await saveToHistory(itemsText);
       };
 
-      const startNewOrder = ()=>{ clearCart(); setScreen(SCREENS.MENU); };
-
-      const clearHistory = ()=>{
-        if(!confirm('주문 내역을 모두 삭제할까요?')) return;
-        setOrders([]); setCounter(0);
-        toast('주문 내역을 초기화했어요');
+      // 관리자: 삭제/복원
+      const deleteOrder = async (o)=>{
+        if(!admin){ alert('관리자만 삭제할 수 있습니다.'); return; }
+        if(!confirm(`${o.no}번 주문을 삭제할까요?`)) return;
+        await api(`/orders/${o.id}/delete`, {method:'PATCH'});
+        await loadOrders(true); toast(`${o.no}번 주문을 삭제했어요`);
+      };
+      const restoreOrder = async (o)=>{
+        if(!admin){ alert('관리자만 복원할 수 있습니다.'); return; }
+        await api(`/orders/${o.id}/restore`, {method:'PATCH'});
+        await loadOrders(true); toast(`${o.no}번 주문을 복원했어요`);
       };
 
-      // 삭제 -> 휴지통으로 이동
-      const deleteOrderWithConfirm = (no)=>{
-        const idx = orders.findIndex(o=>o.no===no);
-        if(idx===-1) return;
-        if(!confirm(`${no}번 주문을 삭제할까요?`)) return;
-        const removed = orders[idx];
-        setOrders(prev => prev.filter(o => o.no !== no));
-        // 휴지통 앞에 쌓기(최근 삭제 우선)
-        setTrash(prev => [{ ...removed, _deletedAt: Date.now(), _index: idx }, ...prev]);
-        toast(`${no}번 주문을 삭제했어요`);
+      // 관리자 로그인/로그아웃
+      const loginAdmin = ()=>{
+        const token = prompt('관리자 토큰을 입력하세요'); if(!token) return;
+        localStorage.setItem(ADMIN_TOKEN_KEY, token); setAdmin(true); toast('관리자 모드');
       };
+      const logoutAdmin = ()=>{ localStorage.removeItem(ADMIN_TOKEN_KEY); setAdmin(false); toast('관리자 해제'); };
 
-      // 복원: 휴지통에서 선택 항목을 원래 index에 삽입
-      const restoreOrder = (no)=>{
-        const i = trash.findIndex(t=>t.no===no);
-        if(i===-1) return;
-        const item = trash[i];
-        setTrash(prev => prev.filter(t=>t.no!==no));
-        setOrders(prev=>{
-          const next = [...prev];
-          const insertAt = Math.min(item._index ?? 0, next.length);
-          next.splice(insertAt, 0, {...item});
-          return next;
-        });
-        toast(`${no}번 주문을 복원했어요`);
-      };
-
-      const clearTrash = ()=>{
-        if(!trash.length) return;
-        if(!confirm('휴지통을 비울까요? 복원할 수 없어요.')) return;
-        setTrash([]);
-        toast('휴지통을 비웠어요');
-      };
-
-      /* ---------- 통계 계산 ---------- */
+      /* ---------- 통계 ---------- */
       const stats = useMemo(()=>{
-        let grand = 0;
-        const per = {};
-        for(const o of orders){
-          grand += o.total || 0;
-          for(const it of (o.items||[])){
-            if(!per[it.id]) per[it.id] = { name: it.name, qty: 0, amount: 0 };
-            per[it.id].qty += (it.qty||0);
-            per[it.id].amount += (it.price||0) * (it.qty||0);
-          }
-        }
-        return { grandTotal: grand, perMenu: per };
-      }, [orders]);
-
-      const perMenuArr = useMemo(()=>{
-        return Object.values(stats.perMenu)
-          .filter(x=>x.amount>0)
-          .sort((a,b)=> b.amount - a.amount);
-      }, [stats.perMenu]);
-
-      const buildMenuTotalsText = ()=>{
-        if(perMenuArr.length===0) return `메뉴별 총액| 없음`;
-        const parts = perMenuArr.map(x=> `${x.name.replace(/\s+/g,'')} ₩${won(x.amount)}(${x.qty})`);
-        return `메뉴별 총액| ${parts.join(', ')}`;
-      };
-
-      // 통합 통계 문자열
-      const buildStatsText = ()=>{
-        const line1 = `총액| ₩${won(stats.grandTotal)}`;
-        const line2 = buildMenuTotalsText();
-        return `${line1}\n${line2}`;
-      };
-
-      const copyStats = async ()=>{
-        await copyText(buildStatsText());
-        toast('통계를 복사했어요');
-      };
-
-      const shareStats = async ()=>{
-        const text = buildStatsText();
-        if(navigator.share){
-          try{ await navigator.share({ text }); }catch(e){}
-        } else {
-          await copyText(text);
-          toast('공유 미지원: 복사해뒀어요');
-        }
-      };
+        let grand=0; const per={};
+        for(const o of orders){ grand += o.total||0; for(const it of (o.items||[])){ if(!per[it.id]) per[it.id]={name:it.name,qty:0,amount:0}; per[it.id].qty += (it.qty||0); per[it.id].amount += (it.price||0)*(it.qty||0);} }
+        return { grandTotal:grand, perMenu:per };
+      },[orders]);
+      const perMenuArr = useMemo(()=> Object.values(stats.perMenu).filter(x=>x.amount>0).sort((a,b)=>b.amount-a.amount),[stats.perMenu]);
+      const buildMenuTotalsText = ()=> perMenuArr.length? `메뉴별 총액| `+perMenuArr.map(x=>`${x.name.replace(/\s+/g,'')} ₩${won(x.amount)}(${x.qty})`).join(', ') : `메뉴별 총액| 없음`;
+      const buildStatsText = ()=> `총액| ₩${won(stats.grandTotal)}\n${buildMenuTotalsText()}`;
+      const copyStats = async ()=>{ await copyText(buildStatsText()); toast('통계를 복사했어요'); };
+      const shareStats = async ()=>{ const text=buildStatsText(); if(navigator.share){ try{await navigator.share({text});}catch(e){} } else { await copyText(text); toast('공유 미지원: 복사해뒀어요'); } };
 
       return (
         <div className="container">
@@ -332,15 +186,13 @@
             <div className="left">
               <button className="icon-btn" onClick={()=>setScreen(SCREENS.MENU)}>홈</button>
               <div className="title">
-                {screen===SCREENS.MENU && '메뉴'}
-                {screen===SCREENS.CART && '장바구니'}
-                {screen===SCREENS.HISTORY && '주문 내역'}
+                {screen===SCREENS.MENU && '메뉴'}{screen===SCREENS.CART && '장바구니'}{screen===SCREENS.HISTORY && '주문 내역'}
               </div>
             </div>
-            <div>
-              {orders.length>0 && screen!==SCREENS.HISTORY && (
-                <button className="icon-btn" onClick={()=>setScreen(SCREENS.HISTORY)}>주문 내역</button>
-              )}
+            <div className="admin">
+              {admin && <span className="tag">관리자</span>}
+              <button className="icon-btn" onClick={admin?logoutAdmin:loginAdmin}>{admin?'로그아웃':'관리자 로그인'}</button>
+              {orders.length>0 && screen!==SCREENS.HISTORY && <button className="icon-btn" onClick={()=>setScreen(SCREENS.HISTORY)}>주문 내역</button>}
             </div>
           </div>
 
@@ -349,13 +201,12 @@
               <div className="content">
                 <div className="grid">
                   {MENU.map(item=>{
-                    const q = itemQty(item.id);
+                    const q=itemQty(item.id);
                     return (
                       <div className="menu-cell" key={item.id}>
                         {q>0 && <div className="badge">{q}</div>}
                         <button className="menu-item" onClick={()=>add(item.id,1)} aria-label={`${item.name} 추가`}>
-                          <div className="name">{item.name}</div>
-                          <div className="price">{won(item.price)}원</div>
+                          <div className="name">{item.name}</div><div className="price">{won(item.price)}원</div>
                         </button>
                       </div>
                     );
@@ -371,28 +222,19 @@
             {screen===SCREENS.CART && (
               <div className="content">
                 <div className="cart-list">
-                  {selectedItemsInMenuOrder.length === 0 && (
-                    <div style={{color:'#666',textAlign:'center',padding:'40px 0'}}>장바구니가 비어 있어요</div>
-                  )}
+                  {selectedItemsInMenuOrder.length===0 && <div style={{color:'#666',textAlign:'center',padding:'40px 0'}}>장바구니가 비어 있어요</div>}
                   {selectedItemsInMenuOrder.map(it=>(
                     <div className="cart-item" key={it.id}>
-                      <div>
-                        <div className="name">{it.name}</div>
-                        <div className="info">{won(it.price)}원 / 개</div>
-                      </div>
+                      <div><div className="name">{it.name}</div><div className="info">{won(it.price)}원 / 개</div></div>
                       <div className="row">
                         <div className="line-total">₩{won(it.price*it.qty)}</div>
                         <div className="qty">
-                          <button className="step" onClick={()=>add(it.id,-1)} aria-label={`${it.name} 빼기`}>&minus;</button>
-                          <input inputMode="numeric" pattern="[0-9]*" type="number" min="0"
-                            value={it.qty}
-                            onChange={(e)=>{
-                              const v = e.target.value === '' ? 0 : parseInt(e.target.value,10);
-                              setQty(it.id, Number.isFinite(v)?v:0);
-                            }}
-                            onFocus={(e)=> e.target.select() }
+                          <button className="step" onClick={()=>add(it.id,-1)}>&minus;</button>
+                          <input inputMode="numeric" type="number" min="0" value={it.qty}
+                            onChange={(e)=>{ const v=e.target.value===''?0:parseInt(e.target.value,10); setQty(it.id,Number.isFinite(v)?v:0); }}
+                            onFocus={(e)=>e.target.select()}
                           />
-                          <button className="step" onClick={()=>add(it.id,1)} aria-label={`${it.name} 더하기`}>+</button>
+                          <button className="step" onClick={()=>add(it.id,1)}>+</button>
                         </div>
                       </div>
                     </div>
@@ -406,9 +248,7 @@
                   <button className="btn" onClick={copyOrder} disabled={selectedItemsInMenuOrder.length===0}>복사</button>
                 </div>
 
-                <div style={{marginTop:12}}>
-                  <button className="btn secondary" onClick={startNewOrder}>새 주문 시작</button>
-                </div>
+                <div style={{marginTop:12}}><button className="btn secondary" onClick={()=>{ setCart({}); setScreen(SCREENS.MENU); }}>새 주문 시작</button></div>
               </div>
             )}
 
@@ -417,36 +257,24 @@
                 <div className="row" style={{marginBottom:12}}>
                   <div className="section-title" style={{margin:0}}>저장된 주문</div>
                   <div className="grow"></div>
-                  <button className="icon-btn" onClick={()=>setShowRestore(true)}>
-                    복원{trash.length?` (${trash.length})`:''}
-                  </button>
-                  <button className="icon-btn" onClick={clearHistory}>초기화</button>
+                  <button className="icon-btn" onClick={()=>{ setShowRestore(true); loadOrders(true); }}>복원{trash.length?` (${trash.length})`:''}</button>
                 </div>
 
-                {/* 통계(한 카드 + 통합 공유/복사) */}
+                {/* 통계 */}
                 <div className="order-card" style={{marginBottom:10}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                    <div style={{fontWeight:800}}>주문 통계</div>
-                    <div className="muted">{orders.length}건</div>
+                    <div style={{fontWeight:800}}>주문 통계</div><div className="muted">{orders.length}건</div>
                   </div>
-
                   <div style={{fontSize:18,fontWeight:800}}>₩{won(stats.grandTotal)}</div>
                   <div className="hr"></div>
-
                   <div style={{fontWeight:800}}>메뉴별 총액</div>
-                  {perMenuArr.length===0 ? (
-                    <div className="muted">주문 내역이 없어 계산할 항목이 없습니다.</div>
-                  ) : (
+                  {perMenuArr.length===0 ? <div className="muted">주문 내역이 없어 계산할 항목이 없습니다.</div> : (
                     <div className="list-2col">
                       {perMenuArr.map(x=>(
-                        <React.Fragment key={x.name}>
-                          <div>{x.name} <span className="muted">({x.qty}개)</span></div>
-                          <div style={{textAlign:'right',fontWeight:700}}>₩{won(x.amount)}</div>
-                        </React.Fragment>
+                        <React.Fragment key={x.name}><div>{x.name} <span className="muted">({x.qty}개)</span></div><div style={{textAlign:'right',fontWeight:700}}>₩{won(x.amount)}</div></React.Fragment>
                       ))}
                     </div>
                   )}
-
                   <div className="row" style={{marginTop:6}}>
                     <button className="btn secondary" onClick={shareStats} disabled={orders.length===0}>공유</button>
                     <button className="btn" onClick={copyStats} disabled={orders.length===0}>복사</button>
@@ -456,44 +284,23 @@
                 {/* 주문 카드 목록 */}
                 <div style={{display:'grid',gap:'10px'}}>
                   {orders.length===0 && <div style={{color:'#666'}}>아직 주문 내역이 없어요.</div>}
-                  {orders.map(o=> (
-                    <div className="order-card" key={o.no}>
-                      <button className="close" aria-label="주문 삭제" title="삭제"
-                        onClick={()=>deleteOrderWithConfirm(o.no)}>&times;</button>
-
-                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',paddingRight:34}}>
+                  {orders.map(o=>(
+                    <div className="order-card" key={o.id}>
+                      {admin && <button className="close" aria-label="주문 삭제" title="삭제" onClick={()=>deleteOrder(o)}>&times;</button>}
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',paddingRight:admin?34:0}}>
                         <div style={{fontWeight:800}}>{o.no}번 주문</div>
                         <div className="meta">{new Date(o.createdAt).toLocaleString('ko-KR')}</div>
                       </div>
-
                       <div>{o.text}</div>
                       <div style={{fontWeight:700}}>합계: ₩{won(o.total)}</div>
                       <div className="row">
                         <button className="btn secondary" onClick={()=>{
-                          const text = `${o.no}번 주문| ${o.text}`;
-                          if(navigator.share){
-                            navigator.share({ text }).catch(()=>{});
-                          } else {
-                            const ta = document.createElement('textarea');
-                            ta.value = text;
-                            document.body.appendChild(ta);
-                            ta.select();
-                            document.execCommand('copy');
-                            document.body.removeChild(ta);
-                          }
+                          const text=`${o.no}번 주문| ${o.text}`;
+                          if(navigator.share){ navigator.share({text}).catch(()=>{}); } else { const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
                         }}>공유</button>
                         <button className="btn" onClick={()=>{
-                          const text = `${o.no}번 주문| ${o.text}`;
-                          if(navigator.clipboard && window.isSecureContext){
-                            navigator.clipboard.writeText(text).catch(()=>{});
-                          } else {
-                            const ta = document.createElement('textarea');
-                            ta.value = text;
-                            document.body.appendChild(ta);
-                            ta.select();
-                            document.execCommand('copy');
-                            document.body.removeChild(ta);
-                          }
+                          const text=`${o.no}번 주문| ${o.text}`;
+                          if(navigator.clipboard&&window.isSecureContext){ navigator.clipboard.writeText(text).catch(()=>{}); } else { const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
                         }}>복사</button>
                       </div>
                     </div>
@@ -509,26 +316,18 @@
               <div className="modal" role="dialog" aria-modal="true">
                 <div className="header" style={{justifyContent:'space-between',marginBottom:8}}>
                   <div style={{fontWeight:800}}>복원 목록</div>
-                  <div style={{display:'flex',gap:8}}>
-                    <button className="pill" onClick={clearTrash} disabled={!trash.length}>휴지통 비우기</button>
-                    <button className="pill" onClick={()=>setShowRestore(false)}>닫기</button>
-                  </div>
+                  <div style={{display:'flex',gap:8}}><button className="pill" onClick={()=>setShowRestore(false)}>닫기</button></div>
                 </div>
                 {trash.length===0 ? (
                   <div className="muted" style={{padding:'12px'}}>삭제된 주문이 없어요.</div>
                 ) : (
                   <div style={{display:'grid',gap:'10px'}}>
                     {trash.map(t=>(
-                      <div className="trash-item" key={t.no}>
-                        <div className="trash-meta">
-                          <div><b>{t.no}번 주문</b></div>
-                          <div>{new Date(t._deletedAt||Date.now()).toLocaleString('ko-KR')}</div>
-                        </div>
+                      <div className="trash-item" key={t.id}>
+                        <div className="trash-meta"><div><b>{t.no}번 주문</b></div><div>{new Date(t.deletedAt||Date.now()).toLocaleString('ko-KR')}</div></div>
                         <div style={{color:'#333'}}>{t.text}</div>
                         <div style={{fontWeight:700}}>합계: ₩{won(t.total)}</div>
-                        <div className="row">
-                          <button className="btn" onClick={()=>restoreOrder(t.no)}>복원</button>
-                        </div>
+                        {admin && <div className="row"><button className="btn" onClick={()=>restoreOrder(t)}>복원</button></div>}
                       </div>
                     ))}
                   </div>
