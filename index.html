@@ -111,9 +111,10 @@
       { id: 'cider-pow', name: '사이다+파워에이드', price: 3000 },
     ];
 
-    const STORAGE_ORDERS_KEY = 'kiosk.orders.v1';
-    const STORAGE_COUNTER_KEY = 'kiosk.orderCounter.v1';
-    const STORAGE_TRASH_KEY  = 'kiosk.orders.trash.v1';   // 휴지통 보관
+    const APP_NS = 'kiosk.food'; // 앱 네임스페이스
+    const STORAGE_ORDERS_KEY = `${APP_NS}.orders.v1`;
+    const STORAGE_COUNTER_KEY = `${APP_NS}.orderCounter.v1`;
+    const STORAGE_TRASH_KEY  = `${APP_NS}.orders.trash.v1`;
     const SCREENS = { MENU:'menu', CART:'cart', HISTORY:'history' };
     const won = (n)=> n.toLocaleString('ko-KR');
 
