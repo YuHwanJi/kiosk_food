@@ -68,18 +68,24 @@
     .close:active{transform:scale(.96)}
     .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:80px;background:#111;color:#fff;padding:10px 14px;border-radius:999px;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,.2);opacity:0;pointer-events:none;transition:opacity .2s;}
     .toast.show{opacity:1}
-    .undo{
-      position:fixed;left:50%;transform:translateX(-50%);bottom:130px;
-      background:#222;color:#fff;padding:10px 14px;border-radius:12px;
-      box-shadow:0 4px 12px rgba(0,0,0,.25);display:flex;gap:10px;align-items:center;
-      font-size:14px;z-index:20;
-    }
-    .undo .link{background:#fff;color:#111;border:0;border-radius:999px;padding:6px 10px;font-weight:800;}
     .row{display:flex;align-items:center;gap:8px;}
     .grow{flex:1}
     .list-2col{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;}
     .muted{color:#777}
     .hr{height:1px;background:var(--border);margin:4px 0;}
+
+    /* 복원 모달 */
+    .modal-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.35); display:flex; align-items:flex-end; justify-content:center; z-index:50;
+    }
+    .modal{
+      width:100%; max-width:480px; background:#fff; border-top-left-radius:16px; border-top-right-radius:16px;
+      box-shadow:0 -8px 24px rgba(0,0,0,.25); padding:12px; max-height:75vh; overflow:auto;
+    }
+    .modal .header{display:flex; align-items:center; gap:8px;}
+    .pill{appearance:none;border:1px solid var(--border);background:#f5f5f5;padding:8px 10px;border-radius:999px;font-size:13px;}
+    .trash-item{border:1px solid var(--border); border-radius:12px; padding:10px; display:grid; gap:8px;}
+    .trash-meta{font-size:12px; color:var(--muted); display:flex; justify-content:space-between;}
   </style>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -107,6 +113,7 @@
 
     const STORAGE_ORDERS_KEY = 'kiosk.orders.v1';
     const STORAGE_COUNTER_KEY = 'kiosk.orderCounter.v1';
+    const STORAGE_TRASH_KEY  = 'kiosk.orders.trash.v1';   // 휴지통 보관
     const SCREENS = { MENU:'menu', CART:'cart', HISTORY:'history' };
     const won = (n)=> n.toLocaleString('ko-KR');
 
@@ -125,22 +132,15 @@
     function App(){
       const [screen,setScreen] = useState(SCREENS.MENU);
       const [cart,setCart] = useState(()=>({}));
-      const [orders,setOrders] = useState(()=>{
-        try{ return JSON.parse(localStorage.getItem(STORAGE_ORDERS_KEY)) || [] }
-        catch(e){ return [] }
-      });
-      const [counter,setCounter] = useState(()=>{
-        const n = Number(localStorage.getItem(STORAGE_COUNTER_KEY) || '0');
-        return Number.isFinite(n) ? n : 0;
-      });
+      const [orders,setOrders] = useState(()=>{ try{ return JSON.parse(localStorage.getItem(STORAGE_ORDERS_KEY)) || [] } catch(e){ return [] } });
+      const [counter,setCounter] = useState(()=>{ const n = Number(localStorage.getItem(STORAGE_COUNTER_KEY) || '0'); return Number.isFinite(n) ? n : 0; });
+      const [trash,setTrash] = useState(()=>{ try{ return JSON.parse(localStorage.getItem(STORAGE_TRASH_KEY)) || [] } catch(e){ return [] } });
+      const [showRestore,setShowRestore] = useState(false);
       const {msg,show,toast} = useToast();
-
-      // 되돌리기 상태
-      const [undoState,setUndoState] = useState({visible:false, order:null, index:null});
-      const undoTimer = useRef(null);
 
       useEffect(()=>{ localStorage.setItem(STORAGE_ORDERS_KEY, JSON.stringify(orders)); },[orders]);
       useEffect(()=>{ localStorage.setItem(STORAGE_COUNTER_KEY, String(counter)); },[counter]);
+      useEffect(()=>{ localStorage.setItem(STORAGE_TRASH_KEY, JSON.stringify(trash)); },[trash]);
 
       const total = useMemo(()=> Object.entries(cart).reduce((acc,[id,info])=>{
         const item = MENU.find(m=>m.id===id);
@@ -242,33 +242,38 @@
         toast('주문 내역을 초기화했어요');
       };
 
-      // 확인창 + 되돌리기 지원 단일 삭제
+      // 삭제 -> 휴지통으로 이동
       const deleteOrderWithConfirm = (no)=>{
         const idx = orders.findIndex(o=>o.no===no);
         if(idx===-1) return;
         if(!confirm(`${no}번 주문을 삭제할까요?`)) return;
         const removed = orders[idx];
         setOrders(prev => prev.filter(o => o.no !== no));
-        // 스낵바 상태 설정
-        if(undoTimer.current){ clearTimeout(undoTimer.current); }
-        setUndoState({visible:true, order:removed, index:idx});
-        undoTimer.current = setTimeout(()=>{
-          setUndoState({visible:false, order:null, index:null});
-        }, 6000);
+        // 휴지통 앞에 쌓기(최근 삭제 우선)
+        setTrash(prev => [{ ...removed, _deletedAt: Date.now(), _index: idx }, ...prev]);
         toast(`${no}번 주문을 삭제했어요`);
       };
 
-      const undoDelete = ()=>{
-        if(!undoState.order) return;
+      // 복원: 휴지통에서 선택 항목을 원래 index에 삽입
+      const restoreOrder = (no)=>{
+        const i = trash.findIndex(t=>t.no===no);
+        if(i===-1) return;
+        const item = trash[i];
+        setTrash(prev => prev.filter(t=>t.no!==no));
         setOrders(prev=>{
           const next = [...prev];
-          const insertAt = Math.min(undoState.index ?? 0, next.length);
-          next.splice(insertAt, 0, undoState.order);
+          const insertAt = Math.min(item._index ?? 0, next.length);
+          next.splice(insertAt, 0, {...item});
           return next;
         });
-        if(undoTimer.current){ clearTimeout(undoTimer.current); }
-        setUndoState({visible:false, order:null, index:null});
-        toast('삭제를 되돌렸어요');
+        toast(`${no}번 주문을 복원했어요`);
+      };
+
+      const clearTrash = ()=>{
+        if(!trash.length) return;
+        if(!confirm('휴지통을 비울까요? 복원할 수 없어요.')) return;
+        setTrash([]);
+        toast('휴지통을 비웠어요');
       };
 
       /* ---------- 통계 계산 ---------- */
@@ -411,6 +416,9 @@
                 <div className="row" style={{marginBottom:12}}>
                   <div className="section-title" style={{margin:0}}>저장된 주문</div>
                   <div className="grow"></div>
+                  <button className="icon-btn" onClick={()=>setShowRestore(true)}>
+                    복원{trash.length?` (${trash.length})`:''}
+                  </button>
                   <button className="icon-btn" onClick={clearHistory}>초기화</button>
                 </div>
 
@@ -494,11 +502,37 @@
             )}
           </div>
 
-          {/* 되돌리기 스낵바 */}
-          {undoState.visible && (
-            <div className="undo" role="status" aria-live="polite">
-              <div>{undoState.order?.no}번 주문을 삭제함</div>
-              <button className="link" onClick={undoDelete}>되돌리기</button>
+          {/* 복원 모달 */}
+          {showRestore && (
+            <div className="modal-backdrop" onClick={(e)=>{ if(e.target===e.currentTarget) setShowRestore(false); }}>
+              <div className="modal" role="dialog" aria-modal="true">
+                <div className="header" style={{justifyContent:'space-between',marginBottom:8}}>
+                  <div style={{fontWeight:800}}>복원 목록</div>
+                  <div style={{display:'flex',gap:8}}>
+                    <button className="pill" onClick={clearTrash} disabled={!trash.length}>휴지통 비우기</button>
+                    <button className="pill" onClick={()=>setShowRestore(false)}>닫기</button>
+                  </div>
+                </div>
+                {trash.length===0 ? (
+                  <div className="muted" style={{padding:'12px'}}>삭제된 주문이 없어요.</div>
+                ) : (
+                  <div style={{display:'grid',gap:'10px'}}>
+                    {trash.map(t=>(
+                      <div className="trash-item" key={t.no}>
+                        <div className="trash-meta">
+                          <div><b>{t.no}번 주문</b></div>
+                          <div>{new Date(t._deletedAt||Date.now()).toLocaleString('ko-KR')}</div>
+                        </div>
+                        <div style={{color:'#333'}}>{t.text}</div>
+                        <div style={{fontWeight:700}}>합계: ₩{won(t.total)}</div>
+                        <div className="row">
+                          <button className="btn" onClick={()=>restoreOrder(t.no)}>복원</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
