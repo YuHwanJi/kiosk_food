@@ -275,9 +275,10 @@
             )}
 
             {screen===SCREENS.HISTORY && (
-              <div className="row" style={{marginBottom:12}}>
-                <div className="section-title" style={{margin:0}}>저장된 주문</div>
-                <div className="grow"></div>
+              <div className="content">
+                <div className="row" style={{marginBottom:12}}>
+                  <div className="section-title" style={{margin:0}}>저장된 주문</div>
+                  <div className="grow"></div>
                 {/* 초기화(영구삭제) 버튼 - 관리자 전용 */}
                 {admin && (
                   <button
@@ -289,15 +290,6 @@
                     초기화(영구삭제)
                   </button>
                 )}
-                <button className="icon-btn" onClick={()=>{ setShowRestore(true); loadOrders(true); }}>
-                  복원{trash.length?` (${trash.length})`:''}
-                </button>
-              </div>
-
-              <div className="content">
-                <div className="row" style={{marginBottom:12}}>
-                  <div className="section-title" style={{margin:0}}>저장된 주문</div>
-                  <div className="grow"></div>
                   <button className="icon-btn" onClick={()=>{ setShowRestore(true); loadOrders(true); }}>복원{trash.length?` (${trash.length})`:''}</button>
                 </div>
 
