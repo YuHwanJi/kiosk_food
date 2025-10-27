@@ -565,6 +565,53 @@ const {msg,show,toast} = useToast();
               </div>
             )}
           </div>
+          {showRestore && (
+            <div
+              className="modal-backdrop"
+              onClick={(e)=>{ if(e.target===e.currentTarget) setShowRestore(false); }}
+            >
+              <div className="modal">
+                <div className="header" style={{marginBottom:8}}>
+                  <strong>삭제된 주문 복원</strong>
+                  <div className="grow" />
+                  <button className="pill" onClick={()=>setShowRestore(false)}>닫기</button>
+                </div>
+
+                {trash.length===0 ? (
+                  <div className="muted" style={{padding:'20px 0'}}>삭제된 주문이 없습니다.</div>
+                ) : (
+                  <div style={{display:'grid',gap:8}}>
+                    {trash.map(t=>(
+                      <div key={t.no} className="trash-item">
+                        <div className="trash-meta">
+                          <span><b>{t.no}번 주문</b></span>
+                          <span>{formatOrderTime(t._deletedAt || t.createdAt)}</span>
+                        </div>
+                        <div>{t.text}</div>
+                        <div className="row">
+                          <button
+                            className="btn"
+                            onClick={()=>{
+                              restoreOrder(t.no);
+                              setShowRestore(false);
+                            }}
+                          >
+                            복원
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {!!trash.length && (
+                  <div className="row" style={{marginTop:10}}>
+                    <button className="btn danger" onClick={clearTrash}>휴지통 비우기</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
