@@ -143,9 +143,9 @@ function useToast(){
     }
 
     function App(){
-  const updateOrderTotal = (orderNo, newTotal)=>{
-    setOrders(prev => prev.map(o=> o.no===orderNo ? {...o, total: Math.max(0, Number.isFinite(newTotal)? newTotal : 0)} : o));
-  };
+    const updateOrderTotal = (orderNo, newTotal)=>{
+      setOrders(prev => prev.map(o=> o.no===orderNo ? {...o, total: Math.max(0, Number.isFinite(newTotal)? newTotal : 0)} : o));
+    };
 
       const [screen,setScreen] = useState(SCREENS.MENU);
       const [cart,setCart] = useState(()=>({}));
@@ -154,7 +154,7 @@ function useToast(){
       const [trash,setTrash] = useState(()=>{ try{ return JSON.parse(localStorage.getItem(STORAGE_TRASH_KEY)) || [] } catch(e){ return [] } });
       const [showRestore,setShowRestore] = useState(false);
       const [editingNo, setEditingNo] = useState(null);
-const {msg,show,toast} = useToast();
+      const {msg,show,toast} = useToast();
 
       useEffect(()=>{ localStorage.setItem(STORAGE_ORDERS_KEY, JSON.stringify(orders)); },[orders]);
       useEffect(()=>{ localStorage.setItem(STORAGE_COUNTER_KEY, String(counter)); },[counter]);
@@ -185,6 +185,40 @@ const {msg,show,toast} = useToast();
           else next[id] = { qty };
           return next;
         });
+      };
+
+      // 숫자 정리 유틸: 문자열/숫자 모두 안전하게 정수 변환 + 음수 방지
+      const toInt = (v) => {
+        if (v === null || v === undefined) return 0;
+        const n = parseInt(String(v).replace(/[^\d]/g, ''), 10);
+        return Number.isFinite(n) ? Math.max(0, n) : 0;
+      };
+
+      // 저장된 주문의 가격 수정
+      const updateItemPrice = (orderNo, itemId, newPrice) => {
+        setOrders(prev => prev.map(o => {
+          if (o.no !== orderNo) return o;
+
+          // 해당 아이템 단가만 갱신
+          const items = (o.items || []).map(it =>
+            it.id === itemId
+              ? { ...it, price: toInt(newPrice) }   // ← 문자열이어도 OK
+              : it
+          );
+
+          // 변경된 단가 기준으로 주문 합계 재계산
+          const total = items.reduce(
+            (sum, it) => sum + toInt(it.price) * (it.qty || 0),
+            0
+          );
+
+          // 공유/복사용 텍스트도 현재 스냅샷으로 동기화
+          const text = items
+            .map(it => `${(it.name || '').replace(/\s+/g, '')} ${it.qty || 0}`)
+            .join(', ');
+
+          return { ...o, items, total, text, _editedAt: Date.now() };
+        }));
       };
 
       const clearCart = ()=> setCart({});
@@ -314,14 +348,25 @@ const {msg,show,toast} = useToast();
       const stats = useMemo(()=>{
         let grand = 0;
         const per = {};
-        for(const o of orders){
-          grand += o.total || 0;
-          for(const it of (o.items||[])){
-            if(!per[it.id]) per[it.id] = { name: it.name, qty: 0, amount: 0 };
-            per[it.id].qty += (it.qty||0);
-            per[it.id].amount += (it.price||0) * (it.qty||0);
+
+        for (const o of orders) {
+          const oTotal = o.total || 0;
+          grand += oTotal;
+
+          const items = o.items || [];
+          // 아이템 원합계(수정 전 기준)
+          const raw = items.reduce((s, it) => s + ((it.price || 0) * (it.qty || 0)), 0);
+          // 주문 합계가 수정되었으면 비율로 배분
+          const factor = raw > 0 ? (oTotal / raw) : 1;
+
+          for (const it of items) {
+            if (!per[it.id]) per[it.id] = { name: it.name, qty: 0, amount: 0 };
+            per[it.id].qty += (it.qty || 0);
+            // 비례 배분된 아이템 금액을 메뉴별 총액에 더하기 (원 단위 반올림)
+            per[it.id].amount += Math.round(((it.price || 0) * (it.qty || 0)) * factor);
           }
         }
+
         return { grandTotal: grand, perMenu: per };
       }, [orders]);
 
